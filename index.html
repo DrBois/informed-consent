@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Confirmation</title>
+  <style>
+    /* Basic CSS styling */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 12px;
+      box-sizing: border-box;
+    }
+    button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 10px 5px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    p {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 1. User Information Form -->
+    <div id="formContainer">
+      <h1>Welcome</h1>
+      <p>Please enter your information to start the video.</p>
+      <form id="userForm">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" required />
+
+        <label for="lastName">Last Name:</label>
+        <input type="text" id="lastName" required />
+
+        <label for="cellPhone">Cell Phone:</label>
+        <input type="tel" id="cellPhone" required />
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" required />
+
+        <button type="submit">Start Video</button>
+      </form>
+    </div>
+
+    <!-- 2. Video Container with Vimeo Embed -->
+    <div id="videoContainer" class="hidden">
+      <h2>Watch the Video</h2>
+      <div style="padding:56.25% 0 0 0;position:relative;">
+        <iframe
+          id="vimeoPlayer"
+          src="https://player.vimeo.com/video/734037619?h=74008a8af4&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen
+          style="position:absolute;top:0;left:0;width:100%;height:100%;"
+          title="Wisdom Tooth Surgery Video">
+        </iframe>
+      </div>
+      <!-- Vimeo Player API -->
+      <script src="https://player.vimeo.com/api/player.js"></script>
+    </div>
+
+    <!-- 3. Confirmation After Video -->
+    <div id="confirmationContainer" class="hidden">
+      <h2>Confirmation</h2>
+      <p>Have you watched the entire video?</p>
+      <button id="watchedYes">Yes, I have watched</button>
+      <button id="watchedNo">No, I haven't</button>
+    </div>
+
+    <!-- 4. Questions Prompt -->
+    <div id="questionContainer" class="hidden">
+      <h2>Questions</h2>
+      <p>Do you have any questions?</p>
+      <button id="questionsYes">Yes</button>
+      <button id="questionsNo">No</button>
+      <div id="questionInputContainer" class="hidden">
+        <label for="questionText">Please enter your question:</label>
+        <textarea id="questionText" rows="4"></textarea>
+        <button id="submitQuestion">Submit Question</button>
+      </div>
+    </div>
+
+    <!-- 5. Final Thank You Message -->
+    <div id="finalMessage" class="hidden">
+      <h2>Thank You!</h2>
+      <p>Your response has been recorded.</p>
+    </div>
+  </div>
+
+  <script>
+    // Global variables to store user data and any question provided
+    let userData = {};
+    let userQuestion = ""; 
+
+    // Handle the user form submission
+    document.getElementById('userForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Collect user data from the form
+      userData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        cellPhone: document.getElementById('cellPhone').value,
+        email: document.getElementById('email').value
+      };
+      console.log("User Data:", userData);
+      
+      // Hide the form and show the video container
+      document.getElementById('formContainer').classList.add('hidden');
+      document.getElementById('videoContainer').classList.remove('hidden');
+    });
+
+    // Initialize the Vimeo player using the provided API
+    var iframe = document.getElementById('vimeoPlayer');
+    var player = new Vimeo.Player(iframe);
+
+    // Listen for the 'ended' event from the Vimeo video
+    player.on('ended', function() {
+      // When the video ends, show the confirmation prompt
+      document.getElementById('confirmationContainer').classList.remove('hidden');
+    });
+
+    // Handle confirmation: If the user confirms they've watched the video
+    document.getElementById('watchedYes').addEventListener('click', function() {
+      document.getElementById('videoContainer').classList.add('hidden');
+      document.getElementById('confirmationContainer').classList.add('hidden');
+      document.getElementById('questionContainer').classList.remove('hidden');
+    });
+
+    // If the user indicates they have not watched the video
+    document.getElementById('watchedNo').addEventListener('click', function() {
+      alert("Please watch the entire video before confirming.");
+    });
+
+    // Handle the question prompt: If the user has questions
+    document.getElementById('questionsYes').addEventListener('click', function() {
+      document.getElementById('questionInputContainer').classList.remove('hidden');
+    });
+
+    // If the user indicates they have no questions
+    document.getElementById('questionsNo').addEventListener('click', function() {
+      // Submit data with no question and show final message
+      submitData();
+      document.getElementById('questionContainer').classList.add('hidden');
+      document.getElementById('finalMessage').classList.remove('hidden');
+    });
+
+    // Handle question submission
+    document.getElementById('submitQuestion').addEventListener('click', function() {
+      userQuestion = document.getElementById('questionText').value;
+      console.log("User Question:", userQuestion);
+      // Submit data including the question
+      submitData();
+      document.getElementById('questionContainer').classList.add('hidden');
+      document.getElementById('finalMessage').classList.remove('hidden');
+    });
+
+    // Function to submit data to Formspree
+    function submitData() {
+      // Combine the collected data
+      const finalData = {
+        ...userData,
+        watchedVideo: true,
+        question: userQuestion
+      };
+      console.log("Final Data to Submit:", finalData);
+
+      // Use your Formspree endpoint
+      fetch('https://formspree.io/f/xpwqkzew', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(finalData)
+      })
+      .then(response => {
+        if (response.ok) {
+          console.log("Data submitted successfully.");
+        } else {
+          console.error("Error submitting data.");
+        }
+      })
+      .catch(error => console.error("Submission error:", error));
+    }
+  </script>
+</body>
+</html>
